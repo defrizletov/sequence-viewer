@@ -7,11 +7,11 @@ frameFormat = 'webp', // формат кадра
 lowQualityFramePrefix = `data:image/${frameFormat};base64,`, // base64 source префикс кадра
 framesDir = './assets/images/'; // путь до директории кадров
 
-// текущий кадр
-let currentFrame = 0,
-pixelsPerFrame = 0,
-currentPixel = 0,
-rotateNumber;
+let currentFrame = 0, // текущий кадр
+pixelsPerFrame = 0, // пикселей между кадрами
+currentPixel = 0, // текущий пиксель между кадрами
+rotateNumber, // большая сторона секвенции для вычислений с пикселями для смены кадров
+timeoutId;
 
 // создание секвенции
 function createSequence () {
@@ -31,8 +31,6 @@ function createSequence () {
     // меняем кадр на самый первый
     moveFrame(0);
 };
-
-let timeoutId;
 
 // смена кадра
 function moveFrame (movement) {
@@ -65,10 +63,13 @@ function moveFrame (movement) {
 };
 
 function onResize () {
+    // получаем ширину и высоту элемента секвенции
     const { width, height } = sequenceElement.getBoundingClientRect();
 
+    // выбираем большую сторону
     rotateNumber = [width,height].sort()[1];
 
+    // выставляем сколько должно пройти пикселей между каждыми кадрами для смены
     pixelsPerFrame = Math.floor(rotateNumber / (frames.length * 2));
 };
 
@@ -96,6 +97,7 @@ function initEvents () {
         };
     }));
 
+    // вызов при изменении размеров окна
     window.addEventListener('resize', onResize);
 };
 
