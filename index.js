@@ -6,10 +6,10 @@ frameLoadTimeout = 500, // время ожидания для загрузки �
 frameFormat = 'webp', // формат кадра
 lowQualityFramePrefix = `data:image/${frameFormat};base64,`, // base64 source префикс кадра
 framesDir = './assets/images/', // путь до директории кадров
-warningElement = document.querySelector('#warning'); // элемент предупреждения об экране устройства
+warningElement = document.querySelector('#warning'), // элемент предупреждения об экране устройства
+pixelsPerFrame = 2.5; // пикселей между кадрами
 
 let currentFrame = 0, // текущий кадр
-pixelsPerFrame = 0, // пикселей между кадрами
 currentPixel = 0, // текущий пиксель между кадрами
 timeoutId;
 
@@ -37,7 +37,8 @@ function moveFrame (movement) {
     currentPixel += Math.abs(movement);
 
     if(currentPixel < pixelsPerFrame) return;
-    else currentPixel = 0;
+
+    currentPixel = 0;
 
     if(timeoutId) {
         clearTimeout(timeoutId);
@@ -49,7 +50,7 @@ function moveFrame (movement) {
     framesContainer[currentFrame].style.display = 'none';
 
     // изменяем кадр в зависимости от направления movement (-1, 0, 1)
-    currentFrame += movement;
+    currentFrame += movement; //devicePixelRatio;
 
     if(currentFrame < 0) currentFrame = framesContainer.length - 1; // если кадр меньше 0, устанавливаем его на последний
     else if(currentFrame >= framesContainer.length) currentFrame = 0; // если кадр больше чем есть, устанавливаем его на первый
@@ -66,12 +67,11 @@ function onResize () {
     // получаем ширину и высоту элемента секвенции
     const { width, height } = sequenceElement.getBoundingClientRect();
 
+    // если устройство в вертикальном положении, показываем предупреждение
     warningElement.style.display = ['none','flex'][+(height > width)];
 
     // выставляем сколько должно пройти пикселей между каждыми кадрами для смены
-    pixelsPerFrame = Math.floor(width / height * 4);
-
-    console.log(pixelsPerFrame);
+    //pixelsPerFrame = Math.floor(width / height * 4); // maybe useless (?)
 };
 
 // ИНИЦАЛИЗАЦИЯ ГЛАВНЫХ СОБЫТИЙ
