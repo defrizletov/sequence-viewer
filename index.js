@@ -5,12 +5,12 @@ sequenceElement = document.querySelector('#sequence'), // html элемент с
 frameLoadTimeout = 500, // время ожидания для загрузки кадра лучшего качества
 frameFormat = 'webp', // формат кадра
 lowQualityFramePrefix = `data:image/${frameFormat};base64,`, // base64 source префикс кадра
-framesDir = './assets/images/'; // путь до директории кадров
+framesDir = './assets/images/', // путь до директории кадров
+warningElement = document.querySelector('#warning'); // элемент предупреждения об экране устройства
 
 let currentFrame = 0, // текущий кадр
 pixelsPerFrame = 0, // пикселей между кадрами
 currentPixel = 0, // текущий пиксель между кадрами
-rotateNumber, // большая сторона секвенции для вычислений с пикселями для смены кадров
 timeoutId;
 
 // создание секвенции
@@ -66,11 +66,12 @@ function onResize () {
     // получаем ширину и высоту элемента секвенции
     const { width, height } = sequenceElement.getBoundingClientRect();
 
-    // выбираем большую сторону
-    rotateNumber = [width,height].sort()[1];
+    warningElement.style.display = ['none','flex'][+(height > width)];
 
     // выставляем сколько должно пройти пикселей между каждыми кадрами для смены
-    pixelsPerFrame = Math.floor(rotateNumber / (frames.length * 2));
+    pixelsPerFrame = Math.floor(width / height * 4);
+
+    console.log(pixelsPerFrame);
 };
 
 // ИНИЦАЛИЗАЦИЯ ГЛАВНЫХ СОБЫТИЙ
