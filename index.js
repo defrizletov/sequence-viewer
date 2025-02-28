@@ -41,7 +41,11 @@ async function createSequence () {
     
             //xhr.open('GET', '/low_frames.jsoя', false);
                         
-            xhr.addEventListener('progress', event => loadingSpan.innerText = Math.floor(event.loaded / event.total * 100) + '%');
+            xhr.addEventListener('progress', event => {
+                console.log(event.loaded, event.total, Math.floor(event.loaded / event.total * 100));
+
+                loadingSpan.innerText = Math.floor(event.loaded / event.total * 100) + '%';
+            });
 
             xhr.addEventListener('load', () => r(eval(xhr.response)));
 
