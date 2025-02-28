@@ -39,23 +39,17 @@ async function createSequence () {
         
             //xhr.responseType = 'json';
     
-            //xhr.open('GET', '/low_frames.jsoя', false);
+            //xhr.open('GET', '/low_frames.json');
 
             let total;
                         
-            xhr.addEventListener('progress', event => {
-                console.log(event.loaded, event.total, Math.floor(event.loaded / total * 100));
+            xhr.addEventListener('progress', event => loadingSpan.innerText = Math.floor(event.loaded / total * 100) + '%');
 
-                loadingSpan.innerText = Math.floor(event.loaded / total * 100) + '%';
+            xhr.addEventListener('readystatechange', () => {
+                if(xhr.readyState === xhr.HEADERS_RECEIVED) total = +xhr.getResponseHeader('content-length');
             });
 
-            xhr.addEventListener('load', () => {
-                total = +xhr.getResponseHeader('Content-Length');
-
-                console.log(total);
-
-                r(eval(xhr.response));
-            });
+            xhr.addEventListener('load', () => r(eval(xhr.response)));
 
             xhr.open('GET', './low_frames.js');
 
