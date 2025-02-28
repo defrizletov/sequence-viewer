@@ -40,7 +40,7 @@ async function createSequence () {
             //xhr.responseType = 'json';
     
             //xhr.open('GET', '/low_frames.jsoя', false);
-            xhr.open('GET', '/low_frames.js', false);
+            xhr.open('GET', './low_frames.js', false);
         
             xhr.onload = () => r(eval(xhr.response));
             
