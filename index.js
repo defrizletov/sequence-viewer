@@ -38,7 +38,11 @@ async function createSequence () {
                 if(xhr.readyState === xhr.HEADERS_RECEIVED) {
                     total = +xhr.getResponseHeader('content-length');
 
-                    xhr.addEventListener('progress', event => loadingSpan.innerText = Math.floor(event.loaded / event.total * 100) + '%');
+                    xhr.addEventListener('progress', event => {
+                        console.log(event);
+
+                        loadingSpan.innerText = Math.floor(event.loaded / event.total * 100) + '%';
+                    });
                 };
             });
 
