@@ -92,11 +92,11 @@ function moveFrame (movement) {
 
     // изменяем кадр в зависимости от направления movement (-1, 0, 1)
     currentFrame += movement;
-    
-    updatePinPositions();
 
     if(currentFrame < 0) currentFrame = framesContainer.length - 1; // если кадр меньше 0, устанавливаем его на последний
     else if(currentFrame >= framesContainer.length) currentFrame = 0; // если кадр больше чем есть, устанавливаем его на первый
+
+    updatePinPositions(); // обновляем позиции пинов
 
     // показываем текущий кадр
     const frame = framesContainer[currentFrame];
@@ -134,116 +134,126 @@ function initEvents () {
 
             previousX = clientX; // устанавливаем предудыщее значение позиции зажатия курсора на текущее
 
-            currentPixel += Math.abs(currentX);
+            currentPixel += Math.abs(currentX); // добавляем пиксели
 
+            // отмена, если пикселей меньше, чем нужно для смены кадра
             if(currentPixel < pixelsPerFrame) return;
         
-            currentPixel = 0;
+            currentPixel = 0; // сбрасываем пиксели
 
+            // если есть таймаут анимации
             if(animationTimeout) {
-                clearTimeout(animationTimeout);
+                clearTimeout(animationTimeout); // убираем запущенный таймаут
         
-                animationTimeout = 0;
+                animationTimeout = 0; // точно очищаем запущенный таймаут
         
-                animationPlaying = false;
+                animationPlaying = false; // анимация секвенции не играет
             };
 
-            // animationTimeout = setTimeout(() => {
-            //     animationPlaying = true;
+            // устанавливаем таймаут для крутящей анимации секвенции
+            animationTimeout = setTimeout(() => {
+                animationPlaying = true; // анимация играет.
 
-            //     lastPerformance = performance.now();
+                lastPerformance = performance.now(); // устанавливаем последнее время кадра на текущее
 
-            //     requestAnimationFrame(animateSequence);
-            // }, animationStartTimeout);
+                requestAnimationFrame(animateSequence); // запрашиваем анимирование секвенции
+            }, animationStartTimeout);
 
             moveFrame(-Math.sign(currentX)); // меняем кадр
         };
     }));
 
-    let menuOpened = false;
+    let menuOpened = false; // открыто ли меню? по умолчанию - нет
 
-    const menuButton = document.querySelector('#menuButton'),
-    [menuText, menuImg] = menuButton.children,
-    menuOverlay = document.querySelector('#menuOverlay'),
-    menuButtons = [...document.querySelector('.buttons').children];
+    const menuButton = document.querySelector('#menuButton'), // кнопка навигации
+    [menuText, menuImg] = menuButton.children, // текст и иконка кнопки навигации
+    menuOverlay = document.querySelector('#menuOverlay'), // сам оверлей меню
+    menuButtons = [...document.querySelector('.buttons').children]; // кнопки в меню
 
     menuButton.addEventListener('click', () => {
-        menuOpened = !menuOpened;
+        menuOpened = !menuOpened; // закрыть или открыть меню?
 
-        menuText.innerText = menuOpened ? 'Закрыть' : 'Генплан';
+        menuText.innerText = menuOpened ? 'Закрыть' : 'Генплан'; // меняем текст внутри кнопки навигации
         menuImg.setAttribute(
             'src',
             menuImg.getAttribute('src').replace(
                 menuOpened ? 'menu' : 'close',
                 menuOpened ? 'close' : 'menu'
             )
-        );
+        ); // меняем иконку внутри кнопки навигации
 
-        menuOverlay.style.display = menuOpened ? 'flex' : 'none';
+        menuOverlay.style.display = menuOpened ? 'flex' : 'none'; // показываем или прячем меню
     });
 
-    let lastSelected = 0;
+    let selectedButton = 0; // выбранная кнопка, по умолчанию 0 - первая
 
+    // находим все кнопки в меню и добавляем к ним обработчик клика
     menuButtons.map((el, i) => el.addEventListener('click', () => {
-        if(lastSelected === i) return;
+        if(selectedButton === i) return; // ничего не делать, если нажата та же кнопка в меню
 
-        menuButtons[lastSelected].classList.remove('selected');
+        menuButtons[selectedButton].classList.remove('selected'); // удаляем у текущей выбранной кнопки класс selected
 
-        lastSelected = i;
+        selectedButton = i; // устанавливаем выбранную кнопку
 
-        el.classList.add('selected');
+        el.classList.add('selected'); // добавляем выбранной кнопке класс selected
     }));
 
     // вызов при изменении размеров окна
     window.addEventListener('resize', onResize);
 };
 
+// создание пинов
 function createPins () {
-    const uiElement = document.querySelector('#ui');
+    const uiElement = document.querySelector('#ui'); // получаем ui
 
+    // проходим по массиву с пинами и достаем title из каждого
     pinsContainer.map(({ title }) => {
-        const pin = document.createElement('div');
+        const pin = document.createElement('div'); // создаем сам пин
 
-        pin.className = 'pin';
+        pin.className = 'pin'; // устанавливаем ему нужный класс
 
-        const text = document.createElement('span');
-        text.innerText = title;
-        pin.append(text);
+        const text = document.createElement('span'); // создаем текст пина
+        text.innerText = title; // устанавливаем текст
+        pin.append(text); // добавляем текст внутрь пина
 
-        uiElement.append(pin);
+        uiElement.append(pin); // добавляем сам пин в ui
     });
 
-    updatePinPositions();
+    updatePinPositions(); // после создания всех пинов, сразу располагаем их в нужные позиции
 };
 
+// обновление позиции пинов
 function updatePinPositions () {
-    const pins = document.querySelectorAll('.pin');
+    // берем все элементы с классом pin
+    [...document.querySelectorAll('.pin')].map((pin, index) => {
+        const pinPositions = pinsContainer[index].positions[currentFrame]; // достаем нужный пин по индексу из контейнера пинов и сразу его позицию в соответствии с текущим кадром
 
-    pins.forEach((pin, index) => {
-        const pinPositions = pinsContainer[index].positions[currentFrame];
+        pin.style.display = pinPositions ? 'flex' : 'none'; // если позиции для пина на этом кадре есть, покажем, иначе спрячем
 
-        pin.style.display = pinPositions ? 'flex' : 'none';
-
+        // если есть позиции для пина на текущем кадре
         if(pinPositions) {
-            pin.style.left = `${pinPositions[0]}%`;
-            pin.style.top = `${pinPositions[1]}%`;
+            pin.style.left = `${pinPositions[0]}%`; // устанавливаем позицию x
+            pin.style.top = `${pinPositions[1]}%`; // устанавливаем позицию y
         };
     });
 };
 
+// анимация секвенции
 function animateSequence (now) {
+    // если анимация играет, снова вызвать эту функцию сразу как браузер сможет ее обработать
     if(animationPlaying) requestAnimationFrame(animateSequence);
 
-    const delta = now - lastPerformance;
+    const delta = now - lastPerformance; // вычисляем дельту - пройденное время между последним и текущим кадрами
 
-    lastPerformance = now;
+    lastPerformance = now; // устанавливаем время кадра
 
-    animationCooldown -= delta;
+    animationCooldown -= delta; // отнимаем от кулдауна смены кадра на следующий дельту
 
+    // если кулдаун меньше или равен 0, то меняем кадр на следующий (создаем анимацию прокрута)
     if(animationCooldown <= 0) {
-        moveFrame(1);
+        moveFrame(1); // двигаем кадр вперед на 1
 
-        animationCooldown = animationDelay;
+        animationCooldown = animationDelay; // устанавливаем кулдаун анимации снова
     };
 };
 
